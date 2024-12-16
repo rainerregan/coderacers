@@ -189,7 +189,7 @@ const TypeRacer: React.FC<TypeRacerProps> = ({ codeSnippet }) => {
     >
       {!focused && !isCompleted && (
         <div className='absolute top-0 left-0 w-full h-full flex items-center justify-center z-10 bg-gray-800/20 backdrop-blur-sm'>
-          Click to continue typing...
+          Click to start typing...
         </div>
       )}
 
