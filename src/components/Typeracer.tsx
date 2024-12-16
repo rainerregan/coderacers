@@ -12,14 +12,21 @@ interface TypeRacerProps {
 const TypeRacer: React.FC<TypeRacerProps> = ({ codeSnippet }) => {
   const [typed, setTyped] = useState('');
   const [isCompleted, setIsCompleted] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const [started, setStarted] = useState(false);
 
   const handleTyping = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (isCompleted) return;
+    if (!focused) return;
 
     const key = e.key;
     const currentSnippet = codeSnippet.snippet;
 
-    console.log(key);
+    // If typing has not started, start it
+    if (!started) {
+      setStarted(true);
+    }
+
     // Handle typing and backspace
     if (key === 'Backspace') {
       setTyped((prev) => prev.slice(0, -1));
@@ -34,7 +41,7 @@ const TypeRacer: React.FC<TypeRacerProps> = ({ codeSnippet }) => {
 
     // Check if typing is complete
     if (typed + key === currentSnippet) {
-      setIsCompleted(true);
+      handleOnComplete();
     }
   };
 
@@ -67,7 +74,7 @@ const TypeRacer: React.FC<TypeRacerProps> = ({ codeSnippet }) => {
       } else if (index === typed.length) {
         // Current character with blinking cursor
         return (
-          <span key={index} className="current-char">
+          <span key={index} className={twMerge(focused && "current-char")}>
             {getChar(char)}
             {/* {showCursor && <span className="blinking-cursor">|</span>} */}
           </span>
@@ -81,14 +88,31 @@ const TypeRacer: React.FC<TypeRacerProps> = ({ codeSnippet }) => {
     });
   };
 
+  const handleOnComplete = () => {
+    setIsCompleted(true);
+    setStarted(false);
+  }
+
   return (
     <div
-      className="min-w-[70%] bg-[#282c34] p-4 rounded-md"
+      className="min-w-[70%] bg-[#282c34] p-4 rounded-md relative overflow-clip"
       tabIndex={0}
       onKeyDown={handleTyping}
-      onFocus={() => console.log('Focused')}
-      onBlur={() => console.log('Blurred')}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
     >
+      {!focused && (
+        <div className='absolute top-0 left-0 w-full h-full flex items-center justify-center z-10 bg-gray-800/20 backdrop-blur-sm'>
+          Click to continue typing...
+        </div>
+      )}
+
+      {started && (
+        <div className='absolute top-0 right-0 px-2 py-1 z-20 bg-gray-600 rounded-bl-lg text-sm'>
+          00:00
+        </div>
+      )}
+
       <SyntaxHighlighter
         language={codeSnippet.language}
         style={atelierCaveDark}
