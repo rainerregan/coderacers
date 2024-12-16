@@ -195,6 +195,11 @@ const TypeRacer: React.FC<TypeRacerProps> = ({ codeSnippet }) => {
     return Math.round(wordCount / (minutes || 1)); // Avoid divide by zero
   };
 
+  const calculateAccuracy = () => {
+    const correctCharacters = typed.split('').filter((char, index) => char === codeSnippet.snippet[index]);
+    return (correctCharacters.length / typed.length) * 100;
+  }
+
   useEffect(() => {
     const calculateCharacters = async () => {
       // Mock rendererProps using SyntaxHighlighter's rendering logic.
@@ -268,6 +273,8 @@ const TypeRacer: React.FC<TypeRacerProps> = ({ codeSnippet }) => {
           {Math.floor((15 - timer) / 60)}:{((15 - timer) % 60).toString().padStart(2, '0')} minutes!
           <br />
           Your WPM: <strong>{calculateWPM()} WPM</strong>
+          <br />
+          Accuracy: <strong>{calculateAccuracy().toFixed(2)}%</strong>
         </div>
       )}
     </div>
