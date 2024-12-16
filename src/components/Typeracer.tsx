@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { atelierCaveDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { twMerge } from 'tailwind-merge';
@@ -25,6 +25,11 @@ const TypeRacer: React.FC<TypeRacerProps> = ({ codeSnippet }) => {
 
   const [charactersData, setCharactersData] = useState<CharacterInfo[] | null>(null);
 
+  // Timer
+  const [timer, setTimer] = useState(15); // Start countdown from 15 seconds
+
+  const timerRef = useRef<number | null>(null); // Use number for browser setInterval
+
   const handleTyping = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (isCompleted) return;
     if (!focused) return;
@@ -33,8 +38,10 @@ const TypeRacer: React.FC<TypeRacerProps> = ({ codeSnippet }) => {
     const currentSnippet = codeSnippet.snippet;
 
     // If typing has not started, start it
+    // Start timer on first keypress
     if (!started) {
       setStarted(true);
+      startTimer();
     }
 
     // If command/ctrl + backspace, delete last word
@@ -60,6 +67,28 @@ const TypeRacer: React.FC<TypeRacerProps> = ({ codeSnippet }) => {
       handleOnComplete();
     }
   };
+
+  const startTimer = () => {
+    if (!timerRef.current) {
+      timerRef.current = window.setInterval(() => {
+        setTimer((prev) => {
+          if (prev <= 1) {
+            handleOnComplete();
+            clearInterval(timerRef.current as number);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000); // Decrease timer every second
+    }
+  };
+
+  // const stopTimer = () => {
+  //   if (timerRef.current) {
+  //     clearInterval(timerRef.current);
+  //     timerRef.current = null;
+  //   }
+  // };
 
   const extractCharacters = (props: rendererProps): CharacterInfo[] => {
     const { rows, stylesheet } = props;
@@ -154,7 +183,14 @@ const TypeRacer: React.FC<TypeRacerProps> = ({ codeSnippet }) => {
   const handleOnComplete = () => {
     setIsCompleted(true);
     setStarted(false);
-  }
+    clearInterval(timerRef.current as number);
+  };
+
+  const calculateWPM = () => {
+    const wordCount = typed.length / 5; // Average word length is 5 characters
+    const minutes = timer / 60;
+    return Math.round(wordCount / (minutes || 1)); // Avoid divide by zero
+  };
 
   useEffect(() => {
     const calculateCharacters = async () => {
@@ -179,6 +215,10 @@ const TypeRacer: React.FC<TypeRacerProps> = ({ codeSnippet }) => {
     calculateCharacters();
   }, [codeSnippet]);
 
+  useEffect(() => {
+    return () => clearInterval(timerRef.current as number); // Cleanup timer on unmount
+  }, []);
+
   return (
     <div
       className="w-full bg-[#282c34] p-4 rounded-md relative overflow-clip"
@@ -194,8 +234,9 @@ const TypeRacer: React.FC<TypeRacerProps> = ({ codeSnippet }) => {
       )}
 
       {started && (
-        <div className='absolute top-0 right-0 px-2 py-1 z-20 bg-gray-600 rounded-bl-lg text-sm'>
-          00:00
+        <div className="absolute top-0 right-0 px-2 py-1 z-20 bg-gray-600 rounded-bl-lg text-sm">
+          Time: {Math.floor(timer / 60).toString().padStart(2, '0')}:
+          {(timer % 60).toString().padStart(2, '0')}
         </div>
       )}
 
@@ -220,7 +261,10 @@ const TypeRacer: React.FC<TypeRacerProps> = ({ codeSnippet }) => {
       {/* Completion Message */}
       {isCompleted && (
         <div className="mt-4 p-2 bg-green-100 text-green-700 rounded-md">
-          🎉 Great job! You completed the snippet!
+          🎉 Great job! You completed the snippet in{' '}
+          {Math.floor((15 - timer) / 60)}:{((15 - timer) % 60).toString().padStart(2, '0')} minutes!
+          <br />
+          Your WPM: <strong>{calculateWPM()} WPM</strong>
         </div>
       )}
     </div>
