@@ -1,9 +1,13 @@
 import './App.css'
 import Button from './components/common/Button'
-import TypeRacer from './components/Typeracer'
+import TypeRacer, { TypingResult } from './components/Typeracer'
 import codeSnippets from './data/snippets'
 
 function App() {
+  const handleOnTestComplete = (result: TypingResult) => {
+    console.log(result)
+  }
+
   return (
     <div className='flex h-screen w-full items-center justify-center flex-col'>
       <div className='flex flex-col gap-2 text-center mb-8'>
@@ -13,7 +17,7 @@ function App() {
 
       <div className='min-w-[70%]'>
         <div className='mb-8'>
-          <TypeRacer codeSnippet={codeSnippets[0]} />
+          <TypeRacer codeSnippet={codeSnippets[0]} onTestComplete={handleOnTestComplete} />
         </div>
 
         <div className='w-full flex justify-center'>

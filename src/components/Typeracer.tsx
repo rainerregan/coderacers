@@ -7,6 +7,7 @@ import './typeracer.css';
 
 interface TypeRacerProps {
   codeSnippet: CodeSnippet;
+  onTestComplete?: (result: TypingResult) => void;
 }
 
 interface CharacterInfo {
@@ -15,12 +16,15 @@ interface CharacterInfo {
   style: any;
 }
 
-interface TypingResult {
+export interface TypingResult {
   wpm: number;
   accuracy: number;
 }
 
-const TypeRacer: React.FC<TypeRacerProps> = ({ codeSnippet }) => {
+const TypeRacer: React.FC<TypeRacerProps> = ({
+  codeSnippet,
+  onTestComplete
+}) => {
   const [typed, setTyped] = useState('');
   const [isCompleted, setIsCompleted] = useState(false);
   const [focused, setFocused] = useState(false);
@@ -132,6 +136,15 @@ const TypeRacer: React.FC<TypeRacerProps> = ({ codeSnippet }) => {
     setIsCompleted(true);
     setStarted(false);
     stopTimer();
+
+    const result: TypingResult = {
+      wpm: calculateWPM(),
+      accuracy: calculateAccuracy(),
+    };
+
+    if (onTestComplete) {
+      onTestComplete(result);
+    }
   };
 
   const renderSnippetWithCursor = () => {
