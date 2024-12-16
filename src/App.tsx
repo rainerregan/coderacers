@@ -1,4 +1,5 @@
 import './App.css'
+import Button from './components/common/Button'
 import TypeRacer from './components/Typeracer'
 import codeSnippets from './data/snippets'
 
@@ -10,7 +11,15 @@ function App() {
         <p>Jadilah si paling ngoding, showcase speed coding kamu!</p>
       </div>
 
-      <TypeRacer codeSnippet={codeSnippets[0]} />
+      <div className='min-w-[70%]'>
+        <div className='mb-8'>
+          <TypeRacer codeSnippet={codeSnippets[0]} />
+        </div>
+
+        <div className='w-full flex justify-center'>
+          <Button icon={"Restart"} />
+        </div>
+      </div>
     </div>
   )
 }

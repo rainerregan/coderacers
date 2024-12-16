@@ -95,7 +95,7 @@ const TypeRacer: React.FC<TypeRacerProps> = ({ codeSnippet }) => {
 
   return (
     <div
-      className="min-w-[70%] bg-[#282c34] p-4 rounded-md relative overflow-clip"
+      className="w-full bg-[#282c34] p-4 rounded-md relative overflow-clip"
       tabIndex={0}
       onKeyDown={handleTyping}
       onFocus={() => setFocused(true)}
