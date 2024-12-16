@@ -9,7 +9,7 @@ const codeSnippets: CodeSnippet[] = [
     id: 1,
     language: "javascript",
     snippet: `function greet(name) {
-  return \`Hello, \${name}!\`;
+  return name;
 }`,
   },
   {
