@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { atelierCaveDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import { twMerge } from 'tailwind-merge';
 import { CodeSnippet } from '../data/snippets';
 import './typeracer.css';
+import SyntaxHighlighter from 'react-syntax-highlighter';
 
 interface TypeRacerProps {
   codeSnippet: CodeSnippet;
@@ -57,7 +59,7 @@ const TypeRacer: React.FC<TypeRacerProps> = ({ codeSnippet }) => {
         return (
           <span
             key={index}
-            className={isCorrect ? 'text-green-500' : 'text-red-500 bg-red-800'}
+            className={twMerge(isCorrect ? 'text-green-500' : 'text-red-500 bg-red-800')}
           >
             {getChar(char)}
           </span>
@@ -72,7 +74,7 @@ const TypeRacer: React.FC<TypeRacerProps> = ({ codeSnippet }) => {
         );
       } else {
         // Untyped characters
-        return <span key={index}>
+        return <span key={index} className='hljs-function'>
           {getChar(char)}
         </span>;
       }
@@ -87,19 +89,23 @@ const TypeRacer: React.FC<TypeRacerProps> = ({ codeSnippet }) => {
       onFocus={() => console.log('Focused')}
       onBlur={() => console.log('Blurred')}
     >
-      {/* Render the code snippet */}
-      <pre
-        style={{
-          ...atelierCaveDark,
+      <SyntaxHighlighter
+        language={codeSnippet.language}
+        style={atelierCaveDark}
+        customStyle={{
           backgroundColor: 'transparent',
           padding: '1rem',
           borderRadius: '0.5rem',
           overflow: 'auto',
           whiteSpace: 'pre-wrap',
         }}
+        useInlineStyles={false}
+        renderer={() => {
+          return renderSnippetWithCursor();
+        }}
       >
-        {renderSnippetWithCursor()}
-      </pre>
+        {typed}
+      </SyntaxHighlighter>
 
       {/* Completion Message */}
       {isCompleted && (
