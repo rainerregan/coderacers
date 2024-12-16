@@ -1,0 +1,15 @@
+.blinking-cursor {
+  display: inline-block;
+  width: 8px;
+  background-color: #22c55e; /* Matches the green for correct text */
+  animation: blink 1s steps(2, start) infinite;
+  height: 1em; /* Adjust to match text height */
+  vertical-align: text-bottom;
+}
+
+.current-char {
+  background-color: rgba(34, 197, 94, 0.2); /* Light green highlight for the current character */
+  border-radius: 4px;
+  display: inline-block;
+  position: relative;
+}
