@@ -10,11 +10,14 @@ interface TypeRacerProps {
 }
 
 interface CharacterInfo {
-  /** The individual character */
   character: string;
-  /** The CSS class name(s) applied to the character */
   className: string;
   style: any;
+}
+
+interface TypingResult {
+  wpm: number;
+  accuracy: number;
 }
 
 const TypeRacer: React.FC<TypeRacerProps> = ({ codeSnippet }) => {
@@ -83,12 +86,12 @@ const TypeRacer: React.FC<TypeRacerProps> = ({ codeSnippet }) => {
     }
   };
 
-  // const stopTimer = () => {
-  //   if (timerRef.current) {
-  //     clearInterval(timerRef.current);
-  //     timerRef.current = null;
-  //   }
-  // };
+  const stopTimer = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current as number);
+      timerRef.current = null;
+    }
+  };
 
   const extractCharacters = (props: rendererProps): CharacterInfo[] => {
     const { rows, stylesheet } = props;
@@ -123,6 +126,12 @@ const TypeRacer: React.FC<TypeRacerProps> = ({ codeSnippet }) => {
     });
 
     return characters;
+  };
+
+  const handleOnComplete = () => {
+    setIsCompleted(true);
+    setStarted(false);
+    stopTimer();
   };
 
   const renderSnippetWithCursor = () => {
@@ -180,12 +189,6 @@ const TypeRacer: React.FC<TypeRacerProps> = ({ codeSnippet }) => {
     });
   };
 
-  const handleOnComplete = () => {
-    setIsCompleted(true);
-    setStarted(false);
-    clearInterval(timerRef.current as number);
-  };
-
   const calculateWPM = () => {
     const wordCount = typed.length / 5; // Average word length is 5 characters
     const minutes = timer / 60;
@@ -216,7 +219,7 @@ const TypeRacer: React.FC<TypeRacerProps> = ({ codeSnippet }) => {
   }, [codeSnippet]);
 
   useEffect(() => {
-    return () => clearInterval(timerRef.current as number); // Cleanup timer on unmount
+    return () => stopTimer();
   }, []);
 
   return (
