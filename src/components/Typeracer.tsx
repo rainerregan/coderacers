@@ -27,6 +27,12 @@ const TypeRacer: React.FC<TypeRacerProps> = ({ codeSnippet }) => {
       setStarted(true);
     }
 
+    // If command/ctrl + backspace, delete last word
+    // If on mac, use command key
+    if ((e.metaKey || e.ctrlKey) && key === 'Backspace') {
+      setTyped((prev) => prev.replace(/(\S+)\s*$/, ''));
+    }
+
     // Handle typing and backspace
     if (key === 'Backspace') {
       setTyped((prev) => prev.slice(0, -1));
