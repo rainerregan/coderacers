@@ -101,7 +101,7 @@ const TypeRacer: React.FC<TypeRacerProps> = ({ codeSnippet }) => {
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
     >
-      {!focused && (
+      {!focused && !isCompleted && (
         <div className='absolute top-0 left-0 w-full h-full flex items-center justify-center z-10 bg-gray-800/20 backdrop-blur-sm'>
           Click to continue typing...
         </div>
