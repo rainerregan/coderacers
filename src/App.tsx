@@ -28,7 +28,7 @@ function App() {
     <div className='flex h-screen w-full items-center justify-center flex-col'>
       <div className='flex flex-col gap-2 text-center mb-8'>
         <h1>CodeRacers</h1>
-        <p>Jadilah si paling ngoding, showcase speed coding kamu!</p>
+        <p>Be the best! Showcase your coding typing skill!</p>
       </div>
 
       <div className='mb-8'>
