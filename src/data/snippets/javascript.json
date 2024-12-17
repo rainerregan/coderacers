@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "snippet": "const sum = (a, b) => a + b;\nconsole.log(sum(2, 3));"
+  },
+  {
+    "id": 2,
+    "snippet": "function greet(name) {\n  return `Hello, ${name}!`;\n}\nconsole.log(greet('Alice'));"
+  },
+  {
+    "id": 3,
+    "snippet": "const numbers = [1, 2, 3, 4, 5];\nconst doubled = numbers.map(n => n * 2);\nconsole.log(doubled);"
+  },
+  {
+    "id": 4,
+    "snippet": "let count = 0;\nsetInterval(() => {\n  count += 1;\n  console.log(count);\n}, 1000);"
+  },
+  {
+    "id": 5,
+    "snippet": "const person = { name: 'John', age: 30, city: 'New York' };\nconst { name, age } = person;\nconsole.log(name, age);"
+  }
+]

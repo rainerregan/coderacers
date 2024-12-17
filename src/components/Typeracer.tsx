@@ -2,11 +2,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { atelierCaveDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { twMerge } from 'tailwind-merge';
-import { CodeSnippet } from '../data/snippets';
 import './typeracer.css';
+import { CodeSnippet, ProgrammingLanguageEnum } from '../data/languages';
 
 interface TypeRacerProps {
   codeSnippet: CodeSnippet;
+  language: ProgrammingLanguageEnum;
   onTestComplete?: (result: TypingResult) => void;
 }
 
@@ -23,6 +24,7 @@ export interface TypingResult {
 
 const TypeRacer: React.FC<TypeRacerProps> = ({
   codeSnippet,
+  language,
   onTestComplete
 }) => {
   const [typed, setTyped] = useState('');
@@ -218,7 +220,7 @@ const TypeRacer: React.FC<TypeRacerProps> = ({
       // Mock rendererProps using SyntaxHighlighter's rendering logic.
       let p = null;
       new SyntaxHighlighter({
-        language: codeSnippet.language,
+        language: language,
         style: atelierCaveDark,
         children: codeSnippet.snippet,
         renderer: (props) => {
@@ -256,13 +258,13 @@ const TypeRacer: React.FC<TypeRacerProps> = ({
 
       {started && (
         <div className="absolute top-0 right-0 px-2 py-1 z-20 bg-gray-600 rounded-bl-lg text-sm">
-          Time: {Math.floor(timer / 60).toString().padStart(2, '0')}:
+          {Math.floor(timer / 60).toString().padStart(2, '0')}:
           {(timer % 60).toString().padStart(2, '0')}
         </div>
       )}
 
       <SyntaxHighlighter
-        language={codeSnippet.language}
+        language={language}
         style={atelierCaveDark}
         customStyle={{
           backgroundColor: 'transparent',
