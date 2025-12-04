@@ -39,6 +39,7 @@ function App() {
           }))}
           onChange={handleLanguageChange}
           defaultValue={selectedLanguage}
+          disabled
         />
       </div>
 
