@@ -10,6 +10,7 @@ interface SelectProps {
   onChange?: (value: string) => void;
   defaultValue?: string;
   disabled?: boolean;
+  className?: string;
 }
 
 const Select: React.FC<SelectProps> = ({
@@ -17,10 +18,11 @@ const Select: React.FC<SelectProps> = ({
   onChange,
   defaultValue,
   disabled = false,
+  className,
 }) => {
   return (
     <select
-      className='p-2 border rounded-lg bg-transparent disabled:cursor-not-allowed disabled:opacity-50'
+      className={`p-2 border rounded-lg bg-transparent disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
       onChange={(e) => onChange?.(e.target.value)}
       defaultValue={defaultValue}
       disabled={disabled}

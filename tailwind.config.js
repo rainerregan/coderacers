@@ -5,7 +5,11 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        'coderacers-bg': '#282c34',
+      }
+    },
   },
   plugins: [],
 }

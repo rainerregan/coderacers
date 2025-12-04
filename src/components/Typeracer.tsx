@@ -1,20 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect } from 'react';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { atelierCaveDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { twMerge } from 'tailwind-merge';
+import { useTyperacer } from '../contexts/typeracer-context';
 import './typeracer.css';
-import { CodeSnippet, ProgrammingLanguageEnum } from '../data/languages';
 
 interface TypeRacerProps {
-  codeSnippet: CodeSnippet;
-  language: ProgrammingLanguageEnum;
-  onTestComplete?: (result: TypingResult) => void;
-}
-
-interface CharacterInfo {
-  character: string;
-  className: string;
-  style: any;
 }
 
 export interface TypingResult {
@@ -22,136 +13,11 @@ export interface TypingResult {
   accuracy: number;
 }
 
-const TypeRacer: React.FC<TypeRacerProps> = ({
-  codeSnippet,
-  language,
-  onTestComplete
-}) => {
-  const typingRef = useRef<HTMLDivElement>(null);
-
-  const [typed, setTyped] = useState('');
-  const [isCompleted, setIsCompleted] = useState(false);
-  const [focused, setFocused] = useState(false);
-  const [started, setStarted] = useState(false);
-
-  const [charactersData, setCharactersData] = useState<CharacterInfo[] | null>(null);
-
-  // Timer
-  const [timer, setTimer] = useState(15); // Start countdown from 15 seconds
-
-  const timerRef = useRef<number | null>(null); // Use number for browser setInterval
-
-  const handleTyping = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (isCompleted) return;
-    if (!focused) return;
-
-    const key = e.key;
-    const currentSnippet = codeSnippet.snippet;
-
-    // If typing has not started, start it
-    // Start timer on first keypress
-    if (!started) {
-      setStarted(true);
-      startTimer();
-    }
-
-    // If command/ctrl + backspace, delete last word
-    // If on mac, use command key
-    if ((e.metaKey || e.ctrlKey) && key === 'Backspace') {
-      setTyped((prev) => prev.replace(/(\S+)\s*$/, ''));
-    }
-
-    // Handle typing and backspace
-    if (key === 'Backspace') {
-      setTyped((prev) => prev.slice(0, -1));
-    } else if (key === 'Enter') {
-      setTyped((prev) => prev + '\n');
-    } else if (key === 'Tab') {
-      e.preventDefault();
-      setTyped((prev) => prev + '  ');
-    } else if (typed.length < currentSnippet.length && key.length === 1) {
-      setTyped((prev) => prev + key);
-    }
-
-    // Check if typing is complete
-    if (typed + key === currentSnippet) {
-      handleOnComplete();
-    }
-  };
-
-  const startTimer = () => {
-    if (!timerRef.current) {
-      timerRef.current = window.setInterval(() => {
-        setTimer((prev) => {
-          if (prev <= 1) {
-            handleOnComplete();
-            clearInterval(timerRef.current as number);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000); // Decrease timer every second
-    }
-  };
-
-  const stopTimer = () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current as number);
-      timerRef.current = null;
-    }
-  };
-
-  const extractCharacters = (props: rendererProps): CharacterInfo[] => {
-    const { rows, stylesheet } = props;
-    const characters: CharacterInfo[] = [];
-
-    const traverseNode = (node: rendererNode, parentClassName = '', parentColor = '') => {
-      if (node.type === 'text' && node.value) {
-        // If it's a text node, split the value into characters
-        const word = node.value as string;
-        word.split('').forEach((char) => {
-          characters.push({
-            character: char,
-            className: parentClassName || '',
-            style: stylesheet[parentClassName] || '',
-          });
-        });
-      } else if (node.type === 'element') {
-        // If it's an element, recursively process its children
-        const className = (node.properties?.className || []).filter(x => x !== 'hljs-function').join(' ');
-        const color = node.properties?.style?.color || parentColor;
-
-        if (node.children) {
-          node.children.forEach((child: rendererNode) =>
-            traverseNode(child, className, color)
-          );
-        }
-      }
-    };
-
-    rows.forEach((row: rendererNode) => {
-      traverseNode(row);
-    });
-
-    return characters;
-  };
-
-  const handleOnComplete = () => {
-    setIsCompleted(true);
-    setStarted(false);
-    stopTimer();
-
-    const result: TypingResult = {
-      wpm: calculateWPM(),
-      accuracy: calculateAccuracy(),
-    };
-
-    if (onTestComplete) {
-      onTestComplete(result);
-    }
-  };
+const TypeRacer: React.FC<TypeRacerProps> = () => {
+  const { isCompleted, focused, typingRef, charactersData, timer, typed, codeSnippet, handleTyping, setFocused, selectedLanguage, calculateAccuracy, calculateWPM } = useTyperacer();
 
   const renderSnippetWithCursor = () => {
+    if (!codeSnippet) return null;
     const currentSnippet = codeSnippet.snippet;
 
     const getChar = (char: string) => {
@@ -206,53 +72,29 @@ const TypeRacer: React.FC<TypeRacerProps> = ({
     });
   };
 
-  const calculateWPM = () => {
-    const wordCount = typed.length / 5; // Average word length is 5 characters
-    const minutes = timer / 60;
-    return Math.round(wordCount / (minutes || 1)); // Avoid divide by zero
-  };
-
-  const calculateAccuracy = () => {
-    const correctCharacters = typed.split('').filter((char, index) => char === codeSnippet.snippet[index]);
-    return (correctCharacters.length / typed.length) * 100;
-  }
-
-  useEffect(() => {
-    const calculateCharacters = async () => {
-      // Mock rendererProps using SyntaxHighlighter's rendering logic.
-      let p = null;
-      new SyntaxHighlighter({
-        language: language,
-        style: atelierCaveDark,
-        children: codeSnippet.snippet,
-        renderer: (props) => {
-          p = props;
-          return null;
-        },
-      });
-
-      if (!p) return;
-
-      const extractedCharacters = extractCharacters(p);
-      setCharactersData(extractedCharacters);
-    };
-
-    calculateCharacters();
-  }, [codeSnippet]);
-
   useEffect(() => {
     typingRef.current?.focus();
-    return () => stopTimer();
+
+    // Listen to any keydown events to focus the typing area
+    const handleGlobalKeydown = () => {
+      typingRef.current?.focus();
+    };
+
+    window.addEventListener('keydown', handleGlobalKeydown);
+
+    return () => {
+      window.removeEventListener('keydown', handleGlobalKeydown);
+    };
   }, []);
 
   return (
     <div
       ref={typingRef}
-      className="w-full bg-[#282c34] p-4 rounded-md relative overflow-clip"
+      className="w-full bg-coderacers-bg p-4 rounded-md relative overflow-clip"
       tabIndex={0}
       onKeyDown={handleTyping}
       onFocus={() => setFocused(true)}
-      onBlur={() => setFocused(false)}
+      onBlur={() => setFocused(true)}
     >
       {/* {!focused && !isCompleted && (
         <div className='absolute top-0 left-0 w-full h-full flex items-center justify-center z-10 bg-gray-800/20 backdrop-blur-sm'>
@@ -267,24 +109,26 @@ const TypeRacer: React.FC<TypeRacerProps> = ({
         </div>
       )}
 
-      <SyntaxHighlighter
-        language={language}
-        style={atelierCaveDark}
-        customStyle={{
-          backgroundColor: 'transparent',
-          fontSize: '1.5rem',
-          padding: '1rem',
-          borderRadius: '0.5rem',
-          overflow: 'auto',
-          whiteSpace: 'pre-wrap',
-        }}
-        useInlineStyles={false}
-        renderer={() => {
-          return renderSnippetWithCursor();
-        }}
-      >
-        {codeSnippet.snippet}
-      </SyntaxHighlighter>
+      {codeSnippet && (
+        <SyntaxHighlighter
+          language={selectedLanguage}
+          style={atelierCaveDark}
+          customStyle={{
+            backgroundColor: 'transparent',
+            fontSize: '1.5rem',
+            padding: '1rem',
+            borderRadius: '0.5rem',
+            overflow: 'auto',
+            whiteSpace: 'pre-wrap',
+          }}
+          useInlineStyles={false}
+          renderer={() => {
+            return renderSnippetWithCursor();
+          }}
+        >
+          {codeSnippet.snippet}
+        </SyntaxHighlighter>
+      )}
 
       {/* Completion Message */}
       {isCompleted && (
