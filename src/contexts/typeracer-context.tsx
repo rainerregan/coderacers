@@ -20,6 +20,7 @@ interface TyperacerContextType {
   typingRef: React.RefObject<HTMLDivElement>;
   selectedLanguage?: ProgrammingLanguageEnum;
   codeSnippet: CodeSnippet | null;
+  gameId?: string;
   handleTyping: (e: React.KeyboardEvent<HTMLDivElement>) => void;
   onTestComplete?: (result: TypingResult) => void;
   setTyped: React.Dispatch<React.SetStateAction<string>>;
@@ -29,6 +30,7 @@ interface TyperacerContextType {
   setCharactersData: React.Dispatch<React.SetStateAction<CharacterInfo[] | null>>;
   calculateWPM: () => number;
   calculateAccuracy: () => number;
+  restartGame: () => void;
 }
 
 interface TyperacerProviderType {
@@ -47,6 +49,9 @@ export const TyperacerProvider: React.FC<TyperacerProviderType> = ({
   onTestComplete
 }) => {
   const typingRef = useRef<HTMLDivElement>(null);
+  const [gameId, setGameId] = useState<string>(
+    Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+  )
 
   const [typed, setTyped] = useState('');
   const [isCompleted, setIsCompleted] = useState(false);
@@ -180,6 +185,19 @@ export const TyperacerProvider: React.FC<TyperacerProviderType> = ({
     return characters;
   };
 
+  const restartGame = () => {
+    setTyped('');
+    setIsCompleted(false);
+    setFocused(false);
+    setStarted(false);
+    setTimer(15);
+    setCharactersData(null);
+    stopTimer();
+
+    setGameId(
+      Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+    );
+  };
 
   const value: TyperacerContextType = {
     timer,
@@ -189,9 +207,10 @@ export const TyperacerProvider: React.FC<TyperacerProviderType> = ({
     started,
     charactersData,
     typingRef,
-    handleTyping,
     selectedLanguage,
     codeSnippet,
+    gameId,
+    handleTyping,
     onTestComplete,
     setTyped,
     setFocused,
@@ -200,6 +219,7 @@ export const TyperacerProvider: React.FC<TyperacerProviderType> = ({
     setCharactersData,
     calculateWPM,
     calculateAccuracy,
+    restartGame,
   };
 
   useEffect(() => {

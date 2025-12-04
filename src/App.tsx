@@ -4,7 +4,7 @@ import Button from './components/common/Button'
 import Select from './components/common/Select'
 import TypeRacer, { TypingResult } from './components/Typeracer'
 import { CodeSnippet, ProgrammingLanguageEnum, programmingLanguages, SnippetData } from './data/languages'
-import { TyperacerProvider } from './contexts/typeracer-context'
+import { TyperacerProvider, useTyperacer } from './contexts/typeracer-context'
 
 const defaultLanguage = ProgrammingLanguageEnum.JAVASCRIPT;
 
@@ -37,31 +37,55 @@ function App() {
           <p>Be the best! Showcase your coding typing skill!</p>
         </div>
 
-        <div className='mb-8 bg-coderacers-bg p-4 rounded-md w-full'>
-          <Select
-            options={programmingLanguages.map((language) => ({
-              value: language.id,
-              label: language.name,
-            }))}
-            onChange={handleLanguageChange}
-            defaultValue={selectedLanguage}
-          />
-        </div>
-
-        <div className='w-full'>
-          <div className='mb-8'>
-            {selectedSnippet ? (
-              <TypeRacer />
-            ) : (
-              <div>Language is still not available</div>
-            )}
-          </div>
-
-          <div className='w-full flex justify-center'>
-            <Button icon={"Restart"} />
-          </div>
-        </div>
+        <CodeRacerApp
+          handleLanguageChange={handleLanguageChange}
+          selectedLanguage={selectedLanguage}
+          selectedSnippet={selectedSnippet}
+        />
       </TyperacerProvider>
+    </div>
+  )
+}
+
+const CodeRacerApp = ({
+  handleLanguageChange,
+  selectedLanguage,
+  selectedSnippet
+}: {
+  handleLanguageChange: (value: string) => void;
+  selectedLanguage: ProgrammingLanguageEnum;
+  selectedSnippet: CodeSnippet | null;
+}) => {
+  const { restartGame, gameId } = useTyperacer();
+
+  return (
+    <div className='w-full'>
+      <small>{gameId}</small>
+
+      <div className='mb-8 w-full flex justify-center bg-coderacers-bg p-2 rounded-md'>
+        <Select
+          options={programmingLanguages.map((language) => ({
+            value: language.id,
+            label: language.name,
+          }))}
+          onChange={handleLanguageChange}
+          defaultValue={selectedLanguage}
+        />
+      </div>
+
+      <div className='w-full'>
+        <div className='mb-8'>
+          {selectedSnippet ? (
+            <TypeRacer />
+          ) : (
+            <div>Language is still not available</div>
+          )}
+        </div>
+
+        <div className='w-full flex justify-center'>
+          <Button icon={"Restart"} onClick={restartGame} />
+        </div>
+      </div>
     </div>
   )
 }

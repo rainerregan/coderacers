@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { atelierCaveDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { twMerge } from 'tailwind-merge';
@@ -14,11 +14,11 @@ export interface TypingResult {
 }
 
 const TypeRacer: React.FC<TypeRacerProps> = () => {
-  const { isCompleted, focused, typingRef, charactersData, timer, typed, codeSnippet, handleTyping, setFocused, selectedLanguage, calculateAccuracy, calculateWPM } = useTyperacer();
+  const { isCompleted, focused, typingRef, charactersData, timer, typed, codeSnippet, gameId, handleTyping, setFocused, selectedLanguage, calculateAccuracy, calculateWPM } = useTyperacer();
 
   const renderSnippetWithCursor = () => {
-    if (!codeSnippet) return null;
-    const currentSnippet = codeSnippet.snippet;
+    // if (!codeSnippet) return null;
+    const currentSnippet = codeSnippet?.snippet;
 
     const getChar = (char: string) => {
       switch (char) {
@@ -31,7 +31,7 @@ const TypeRacer: React.FC<TypeRacerProps> = () => {
       }
     }
 
-    return currentSnippet.split('').map((char, index) => {
+    return currentSnippet?.split('').map((char, index) => {
       const baseClassName = charactersData?.[index]?.className || '';
       const baseStyle = charactersData?.[index]?.style || {};
 
@@ -72,6 +72,32 @@ const TypeRacer: React.FC<TypeRacerProps> = () => {
     });
   };
 
+  const memoizedRender = useMemo(() => {
+    return codeSnippet ? (
+      <SyntaxHighlighter
+        key={gameId}
+        language={selectedLanguage}
+        style={atelierCaveDark}
+        customStyle={{
+          backgroundColor: 'transparent',
+          fontSize: '1.5rem',
+          padding: '1rem',
+          borderRadius: '0.5rem',
+          overflow: 'auto',
+          whiteSpace: 'pre-wrap',
+        }}
+        useInlineStyles={false}
+        PreTag={({ children, ...props }) => (
+          <pre {...props}>
+            {renderSnippetWithCursor()}
+          </pre>
+        )}
+      >
+        {codeSnippet?.snippet}
+      </SyntaxHighlighter>
+    ) : <></>
+  }, [codeSnippet, gameId, typed, focused, selectedLanguage, charactersData]);
+
   useEffect(() => {
     typingRef.current?.focus();
 
@@ -86,6 +112,12 @@ const TypeRacer: React.FC<TypeRacerProps> = () => {
       window.removeEventListener('keydown', handleGlobalKeydown);
     };
   }, []);
+
+  useEffect(() => {
+    console.log('GameId changed:', gameId);
+  }, [gameId]);
+
+  console.log('Typeracer Rendered', { isCompleted, focused, timer, typed, codeSnippet, gameId });
 
   return (
     <div
@@ -109,26 +141,7 @@ const TypeRacer: React.FC<TypeRacerProps> = () => {
         </div>
       )}
 
-      {codeSnippet && (
-        <SyntaxHighlighter
-          language={selectedLanguage}
-          style={atelierCaveDark}
-          customStyle={{
-            backgroundColor: 'transparent',
-            fontSize: '1.5rem',
-            padding: '1rem',
-            borderRadius: '0.5rem',
-            overflow: 'auto',
-            whiteSpace: 'pre-wrap',
-          }}
-          useInlineStyles={false}
-          renderer={() => {
-            return renderSnippetWithCursor();
-          }}
-        >
-          {codeSnippet.snippet}
-        </SyntaxHighlighter>
-      )}
+      {memoizedRender}
 
       {/* Completion Message */}
       {isCompleted && (
